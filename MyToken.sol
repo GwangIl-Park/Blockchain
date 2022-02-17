@@ -5,7 +5,7 @@ import "./ERC20.sol";
 import "./Owner.sol";
 
 contract MyToken is ERC20, Owner{
-    constructor() ERC20("GWANGIL","PGI",18){}
+    constructor(string memory _name, string memory _symbol, uint8 _decimals) ERC20(_name,_symbol,_decimals){}
     function getName() public view returns (string memory)
     {
         return name;
