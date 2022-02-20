@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity >=0.8.0;
 
 import "./MyToken.sol";
 import "./Owner.sol";
@@ -52,16 +52,16 @@ contract CrowdSale is Owner{
         if(block.timestamp>=deadline)
         _;
     }
-    function checkGoal() public timeEnd{
+    function checkGoal() public payable timeEnd{
         if(fund >= goal)
         {
-            payable(owner).transfer(fund);
+            payable(owner).call{value:fund};
         }
         else
         {
             for(uint i=0;i<investors.length;i++)
             {
-                payable(investors[i]).transfer(fund_investor[investors[i]]);
+                payable(investors[i]).call{value:fund_investor[investors[i]]};
             }
         }
     }
