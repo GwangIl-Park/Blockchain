@@ -20,7 +20,7 @@ contract ERC20 is IERC20{
     }
     function _mint(address _account, uint256 _amount) internal returns (bool)
     {
-        require(_account!=address(0), "account address 0");
+        require(_account!=address(0));
         balance_map[_account]+=_amount;
         total_token+=_amount;
         emit Transfer(address(0), _account, _amount);
@@ -35,7 +35,7 @@ contract ERC20 is IERC20{
     {
         return balance_map[_account];
     }
-    function _transfer(address _from, address _to, uint256 _amount) private returns (bool)
+    function _transfer(address _from, address _to, uint256 _amount) internal returns (bool)
     {
         require(_from != address(0), "Transfer From Address 0");
         require(_to != address(0), "Transfer To Address 0");

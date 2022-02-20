@@ -10,4 +10,8 @@ contract MyToken is ERC20, Owner{
     {
         _mint(getOwner(), _amount);
     }
+    function sellToken(address _purchaser, uint256 _amount) public
+    {
+        _transfer(getOwner(), _purchaser, _amount);
+    }
 }

@@ -5,29 +5,34 @@ import "./MyToken.sol";
 import "./Owner.sol";
 
 contract CrowdSale is Owner{
-    //토큰 주소
-    address private token;
-    //1wei당 토큰 가격
+    MyToken private token;
     uint256 private price;
     address private owner;
     uint256 private goal;
     uint256 private fund;
     uint256 private deadline;
+    uint256 private total_token;
+    uint256 private remain_token;
     mapping (address => uint256) private fund_investor;
     address[] private investors;
 
     event Invest(address indexed _investor, uint256 _amount);
 
-    constructor(address _token, uint256 _price, uint256 _goal){
-        token = _token;
+    constructor(address _token, uint256 _price, uint256 _goal, uint256 _deadline){
+        token = MyToken(_token);
         price = _price;
         owner = msg.sender;
         goal = _goal;
+        deadline = _deadline;
         fund = 0;
+        total_token = token.totalSupply();
+        remain_token = total_token;
     }
     receive() external payable {
         uint256 amount = msg.value;
         uint256 tokenAmount = amount * price;
+        require(tokenAmount <= remain_token,"no more token");
+        remain_token -= tokenAmount;
         fund += amount;
         bool bexist = false;
         for(uint i=0;i<investors.length;i++)
@@ -43,7 +48,7 @@ contract CrowdSale is Owner{
             investors.push(msg.sender);
         }
         fund_investor[msg.sender]+=amount;
-        MyToken(token).transfer(msg.sender, tokenAmount);
+        token.sellToken(msg.sender, tokenAmount);
         emit Invest(msg.sender, amount);
     }
 

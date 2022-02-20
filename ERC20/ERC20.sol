@@ -35,7 +35,7 @@ contract ERC20 is IERC20{
     {
         return balance_map[_account];
     }
-    function _transfer(address _from, address _to, uint256 _amount) private returns (bool)
+    function _transfer(address _from, address _to, uint256 _amount) internal returns (bool)
     {
         require(_from != address(0), "Transfer From Address 0");
         require(_to != address(0), "Transfer To Address 0");
