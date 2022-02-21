@@ -62,13 +62,15 @@ contract CrowdSale is Owner{
     {
         if(fund >= goal)
         {
-            payable(owner).call{value:fund};
+            payable(owner).transfer(fund);
+            //payable(owner).call{value:fund};
         }
         else
         {
             for(uint i=0;i<investors.length;i++)
             {
-                payable(investors[i]).call{value:fund_investor[investors[i]]};
+                payable(investors[i]).transfer(fund_investor[investors[i]]);
+                //payable(investors[i]).call{value:fund_investor[investors[i]]};
             }
         }
     }

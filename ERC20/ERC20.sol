@@ -16,9 +16,6 @@ contract ERC20 is IERC20Metadata{
     {
         token_name = _name;
         token_symbol = _symbol;
-
-        //openzepplin기준 : decimal은 18로 고정
-        //overloading해서 쓰라는데 어떻게..?
         token_decimals = _decimals;
     }
     function name() public view override returns (string memory)
