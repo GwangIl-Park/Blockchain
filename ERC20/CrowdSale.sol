@@ -30,6 +30,7 @@ contract CrowdSale is Owner{
     }
     receive() external payable {
         uint256 amount = msg.value;
+        address investor = msg.sender;
         uint256 tokenAmount = amount * price;
         require(tokenAmount <= remain_token,"no more token");
         remain_token -= tokenAmount;
@@ -37,7 +38,7 @@ contract CrowdSale is Owner{
         bool bexist = false;
         for(uint i=0;i<investors.length;i++)
         {
-            if(investors[i]==msg.sender)
+            if(investors[i]==investor)
             {
                 bexist = true;
                 break;
@@ -45,19 +46,20 @@ contract CrowdSale is Owner{
         }
         if(!bexist)
         {
-            investors.push(msg.sender);
+            investors.push(investor);
         }
-        fund_investor[msg.sender]+=amount;
-        token.sellToken(msg.sender, tokenAmount);
-        emit Invest(msg.sender, amount);
+        fund_investor[investor]+=amount;
+        token.sellToken(investor, tokenAmount);
+        emit Invest(investor, amount);
     }
 
     modifier timeEnd()
     {
-        if(block.timestamp>=deadline)
+        require(block.timestamp>=deadline, "not yet");
         _;
     }
-    function checkGoal() public payable timeEnd{
+    function checkGoal() public payable timeEnd
+    {
         if(fund >= goal)
         {
             payable(owner).call{value:fund};

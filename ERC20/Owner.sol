@@ -7,7 +7,7 @@ contract Owner{
         owner = msg.sender;
     }
     modifier b_owner{
-        require(msg.sender == owner);
+        require(msg.sender == owner, "not owner");
         _;
     }
     function getOwner() public view returns (address)
