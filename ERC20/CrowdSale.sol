@@ -22,8 +22,8 @@ contract CrowdSale is Owner{
         token = MyToken(_token);
         price = _price;
         owner = msg.sender;
-        goal = _goal;
-        deadline = _deadline;
+        goal = _goal * (10**token.decimals());
+        deadline = block.timestamp + 1 days * _deadline;
         fund = 0;
         total_token = token.totalSupply();
         remain_token = total_token;
@@ -53,13 +53,9 @@ contract CrowdSale is Owner{
         emit Invest(investor, amount);
     }
 
-    modifier timeEnd()
+    function checkGoal() public payable
     {
-        require(block.timestamp>=deadline, "not yet");
-        _;
-    }
-    function checkGoal() public payable timeEnd
-    {
+        require(block.timestamp >= deadline, "not yet");
         if(fund >= goal)
         {
             payable(owner).transfer(fund);
