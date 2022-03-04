@@ -1,0 +1,7 @@
+web3.modules.Eth.givenProvider
+web3.modules.Eth.name
+web3.modules.Eth
+web3 = require('Web3');
+web3 = require('web3');
+web3 = require('web3')
+web3 = require
