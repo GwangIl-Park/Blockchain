@@ -4,10 +4,14 @@ const Web3 = require('web3');
 const Wallet = require("ethereumjs-wallet");
 const fs = require("fs");
 
-const keystorePath = "/Users/gipark/BlockChain/Blockchain/hardhat/UTC--2022-03-02T08-27-12.374Z--ff78361785832d952916d0a8d5ff6895139aa958";
+//const keystorePath = "/home/gipark/testnet/keystore/UTC--2022-03-07T10-03-13.124634400Z--d0ca1613a59374ac4c99692c9b7235f2980f9ae4";
 
-const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545'));
-//const web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'));
+//const keystorePath2 = "/home/gipark/testnet/keystore/UTC--2022-03-07T10-04-01.189444200Z--37fdd8ccc6459ff6e0048f7fe0e7f5c79848efa0";
+
+const keystorePath = "/home/gipark/Blockchain2/UTC--2022-03-08T00-47-31.834Z--05d035d402d20cb04a7bbc07aa4481d019499ec6";
+
+//const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+const web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'));
 const myTokenAbi = require('../artifacts/contracts/MyToken.sol/MyToken.json').abi;
 const myTokenBytecode = require('../artifacts/contracts/MyToken.sol/MyToken.json').bytecode;
 
@@ -29,7 +33,53 @@ let connect_contract = function(ca=undefined){
     }
 }
 
-let sendSignedTransaction = async function(from, privateKey, func, to=undefined)
+let sendSignedTransaction = async function(account, password, func, to=undefined)
+{
+    try{
+    let nonce = await web3.eth.getTransactionCount(account); //return number
+
+    nonce = web3.utils.toHex(nonce);
+    
+    let gasPrice = await web3.eth.getGasPrice(); //return string
+
+    gasPrice = `0x${parseInt(gasPrice).toString(16)}`;
+
+    let gasLimit = await func.estimateGas({from: account});
+
+    let data = await func.encodeABI();
+    let chainId = await web3.eth.net.getId();
+    let rawTx = {
+        nonce,
+        gasLimit,
+        gasPrice,
+        data
+    }
+
+    if(to!=undefined)
+    {
+        rawTx.to=to;
+    }
+
+    let tx = new Tx(rawTx,{chain:'ropsten'});
+
+    let wallet = Wallet.fromV3(fs.readFileSync(keystorePath,'utf8'),password,true);
+
+    let key = wallet.getPrivateKey();
+    
+    tx.sign(key);
+
+    let serializedTx = tx.serialize();
+
+    let rawData = '0x'+serializedTx.toString('hex');
+
+    await web3.eth.sendSignedTransaction(rawData);
+    }
+    catch(error){
+        console.log(error);
+    }
+}
+
+let sendSignedTransaction_key = async function(from, privateKey, func, to=undefined)
 {
     let nonce = await web3.eth.getTransactionCount(from);
 
@@ -112,38 +162,9 @@ module.exports.deploy = async function(account, password)
 
         let deployParameter = {data: myTokenBytecode, arguments: ['PGI','PGI', 18]};
 
-        let wallet = Wallet.fromV3(fs.readFileSync(keystorePath,'utf8'),password,true);
+        let func = myToken.deploy(deployParameter);
 
-        let nonce = await web3.eth.getTransactionCount(account);
-
-        nonce = web3.utils.toHex(nonce);
-
-        let gasPrice = await web3.eth.getGasPrice();
-
-        gasPrice = `0x${parseInt(gasPrice).toString(16)}`;
-
-        let gasLimit = await myToken.deploy(deployParameter).estimateGas({from: account});
-
-        let data = await myToken.deploy(deployParameter).encodeABI();
-
-        let rawTx = {
-            nonce,
-            gasLimit,
-            gasPrice,
-            data
-        }
-
-        let tx = new Tx(rawTx);
-
-        let key = wallet.getPrivateKey();
-        
-        tx.sign(key);
-
-        let serializedTx = tx.serialize();
-
-        let rawData = '0x'+serializedTx.toString('hex');
-
-        await web3.eth.sendSignedTransaction(rawData);
+        await sendSignedTransaction(account, password, func);
     }
     catch(error){
         console.log(error);
@@ -230,6 +251,22 @@ module.exports.transferFrom = async function(ca, eoa, privateKey, from, to, amou
         
         let func = myToken.methods.transferFrom(from, to, amount);
         await sendSignedTransaction(eoa, privateKey, func, ca);
+    }
+    catch(error){
+        console.log(error);
+    }
+}
+
+module.exports.test = async function(ca, eoa){
+    try{
+        connect_contract(ca);
+        
+        let batch = new web3.BatchRequest();
+        batch.add(web3.eth.getBalance.then(console.log).request(eoa));
+
+        batch.add(myToken.methods.balanceOf(eoa).call.request().then(console.log));
+
+        await batch.execute();
     }
     catch(error){
         console.log(error);

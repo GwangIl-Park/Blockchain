@@ -4,6 +4,7 @@
 const libMyToken = require("../libs/libMyToken.js");
 const libCrowdsale = require("../libs/libCrowdsale.js");
 
+const test = libMyToken.test;
 const getBalance = libMyToken.getBalance;
 const sendTransaction = libMyToken.sendTransaction;
 const makeKeystore = libMyToken.makeKeystore;
@@ -21,11 +22,24 @@ const getFailEther = libCrowdsale.getFailEther;
 const getGoal = libCrowdsale.getGoal;
 const getFund = libCrowdsale.getFund;
 
+let proc_test = async function(){
+    try{
+        if(process.argv.length != 5)
+        {
+            throw new Error("Usage : node exams/exams.js test [ca] [address]");
+        }
+        await test(arguments[0],arguments[1]);
+    }
+    catch(error){
+        console.log(error);
+    }
+}
+
 let proc_getBalance = async function(){
     try{
         if(process.argv.length != 4)
         {
-            throw new Error("Usage : node exams/exams.js makeKeystore [address]");
+            throw new Error("Usage : node exams/exams.js getBalance [address]");
         }
         await getBalance(arguments[0]);
     }
@@ -253,6 +267,7 @@ let RunProc = async function() {
             case "getFailEther":{await proc_getFailEther(process.argv[3], process.argv[4],process.argv[5]);break;}
             case "getGoal":{await proc_getGoal(process.argv[3]);break;}
             case "getFund":{await proc_getFund(process.argv[3]);break;}
+            case "test":{await proc_test(process.argv[3],process.argv[4]);break;}
             default: {throw new Error("Invalid category!");}
         }
         console.log("end");
