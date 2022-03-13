@@ -3,6 +3,7 @@ const Web3 = require('web3');
 
 const Wallet = require("ethereumjs-wallet");
 const fs = require("fs");
+const Tx = require('ethereumjs-tx').Transaction;
 
 //const keystorePath = "/home/gipark/testnet/keystore/UTC--2022-03-07T10-03-13.124634400Z--d0ca1613a59374ac4c99692c9b7235f2980f9ae4";
 
@@ -14,8 +15,6 @@ const keystorePath = "/home/gipark/Blockchain2/UTC--2022-03-08T00-47-31.834Z--05
 const web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'));
 const crowdsaleAbi = require('../artifacts/contracts/CrowdSale.sol/CrowdSale.json').abi;
 const crowdsaleBytecode = require('../artifacts/contracts/CrowdSale.sol/CrowdSale.json').bytecode;
-
-const Tx = require('ethereumjs-tx').Transaction;
 
 let crowdsale = undefined;
 
@@ -114,7 +113,7 @@ let sendSignedTransaction_key = async function(from, privateKey, func, to=undefi
     await web3.eth.sendSignedTransaction(rawData);
 }
 
-module.exports.deployCrowdsale = async function(ownerAddress, privateKey, token, price, goal)
+module.exports.deployCrowdsale = async function(account, password, token, price, goal)
 {
     try{
         connect_contract();

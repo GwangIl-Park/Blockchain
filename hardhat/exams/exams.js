@@ -8,8 +8,8 @@ const test = libMyToken.test;
 const getBalance = libMyToken.getBalance;
 const sendTransaction = libMyToken.sendTransaction;
 const makeKeystore = libMyToken.makeKeystore;
-const deploy = libMyToken.deploy;
-const deploy2_token = libMyToken.deploy2_token;
+const deploy_token = libMyToken.deploy_token;
+const deploy_key_token = libMyToken.deploy_key_token;
 const totalSupply = libMyToken.totalSupply;
 const balanceOf = libMyToken.balanceOf;
 const transfer = libMyToken.transfer;
@@ -22,13 +22,13 @@ const getFailEther = libCrowdsale.getFailEther;
 const getGoal = libCrowdsale.getGoal;
 const getFund = libCrowdsale.getFund;
 
-let proc_test = async function(){
+let proc_test = function(){
     try{
-        if(process.argv.length != 5)
+        if(process.argv.length != 8)
         {
-            throw new Error("Usage : node exams/exams.js test [ca] [address]");
+            throw new Error("Usage : node exams/exams.js test [from] [to] [from2] [to2] [value]");
         }
-        await test(arguments[0],arguments[1]);
+        test(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4]);
     }
     catch(error){
         console.log(error);
@@ -74,26 +74,26 @@ let proc_makeKeystore = function(){
     }
 }
 
-let proc_deploy = async function(){
+let proc_deploy_token = async function(){
     try{
-        if(process.argv.length != 5)
+        if(process.argv.length != 8)
         {
-            throw new Error("Usage : node exams/exams.js deploy [account] [password]");
+            throw new Error("Usage : node exams/exams.js deploy_token [account] [password] [name] [symbol] [decimal]");
         }
-        await deploy(arguments[0],arguments[1]);
+        await deploy_token(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4]);
     }
     catch (error){
         console.log(error);
     }
 }
 
-let proc_deploy2_token = async function(){
+let proc_deploy_key_token = async function(){
     try{
-        if(process.argv.length != 5)
+        if(process.argv.length != 8)
         {
-            throw new Error("Usage : node exams/exams.js deploy2_token [account] [privateKey]");
+            throw new Error("Usage : node exams/exams.js deploy_key_token [account] [privateKey] [name] [symbol] [decimal]");
         }
-        await deploy2_token(arguments[0],arguments[1]);
+        await deploy_key_token(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4]);
     }
     catch (error){
         console.log(error);
@@ -252,29 +252,29 @@ let RunProc = async function() {
         console.log(category);
         switch(category) {
             case "getBalance":{await proc_getBalance(process.argv[3]);break;}
+
             case "sendTransaction":{await proc_sendTransaction(process.argv[3],process.argv[4],process.argv[5]);break;}
             case "makeKeystore":{proc_makeKeystore(process.argv[3],process.argv[4]);break;}
-            case "deploy":{await proc_deploy(process.argv[3],process.argv[4]);break;}   //key from keystore file
-            case "deploy2_token":{await proc_deploy2_token(process.argv[3],process.argv[4]);break;}  //for ganache test (input key)
+            case "deploy_token":{await proc_deploy_token(process.argv[3],process.argv[4],process.argv[5],process.argv[6],process.argv[7]);break;}   //key from keystore file
+            case "deploy_key_token":{await proc_deploy_key_token(process.argv[3],process.argv[4],process.argv[5],process.argv[6],process.argv[7]);break;}  //for ganache test (input key)
             case "totalSupply":{await proc_totalSupply(process.argv[3]);break;}
             case "balanceOf":{await proc_balanceOf(process.argv[3], process.argv[4]);break;}
             case "transfer":{await proc_transfer(process.argv[3], process.argv[4],process.argv[5],process.argv[6],process.argv[7]);break;}
             case "allowance":{await proc_allowance(process.argv[3], process.argv[4],process.argv[5]);break;}
             case "approve":{await proc_approve(process.argv[3], process.argv[4],process.argv[5],process.argv[6],process.argv[7],process.argv[8]);break;}
             case "transferFrom":{await proc_transferFrom(process.argv[3], process.argv[4],process.argv[5],process.argv[6],process.argv[7],process.argv[8]);break;}
+
             case "deployCrowdsale":{await proc_deployCrowdsale(process.argv[3], process.argv[4],process.argv[5],process.argv[6],process.argv[7]);break;}
             case "checkGoal":{await proc_checkGoal(process.argv[3], process.argv[4],process.argv[5]);break;}
             case "getFailEther":{await proc_getFailEther(process.argv[3], process.argv[4],process.argv[5]);break;}
             case "getGoal":{await proc_getGoal(process.argv[3]);break;}
             case "getFund":{await proc_getFund(process.argv[3]);break;}
-            case "test":{await proc_test(process.argv[3],process.argv[4]);break;}
+            case "test":{proc_test(process.argv[3], process.argv[4],process.argv[5],process.argv[6],process.argv[7]);break;}
             default: {throw new Error("Invalid category!");}
         }
         console.log("end");
-        process.exit(0);
     } catch(error) {
         console.log(error);
-        process.exit(1);
     }
 }
 

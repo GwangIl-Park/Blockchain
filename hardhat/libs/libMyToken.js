@@ -1,23 +1,19 @@
-
-const Web3 = require('web3');
-
 const Wallet = require("ethereumjs-wallet");
 const fs = require("fs");
+const Tx = require('ethereumjs-tx').Transaction;
 
-//const keystorePath = "/home/gipark/testnet/keystore/UTC--2022-03-07T10-03-13.124634400Z--d0ca1613a59374ac4c99692c9b7235f2980f9ae4";
+const keystorePath = "/home/gipark/testnet/keystore/UTC--2022-03-07T10-03-13.124634400Z--d0ca1613a59374ac4c99692c9b7235f2980f9ae4";
 
 //const keystorePath2 = "/home/gipark/testnet/keystore/UTC--2022-03-07T10-04-01.189444200Z--37fdd8ccc6459ff6e0048f7fe0e7f5c79848efa0";
 
-const keystorePath = "/home/gipark/Blockchain2/UTC--2022-03-08T00-47-31.834Z--05d035d402d20cb04a7bbc07aa4481d019499ec6";
+//const keystorePath = "/home/gipark/Blockchain2/UTC--2022-03-08T00-47-31.834Z--05d035d402d20cb04a7bbc07aa4481d019499ec6";
 
-//const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+//const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545'));
 const web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'));
 const myTokenAbi = require('../artifacts/contracts/MyToken.sol/MyToken.json').abi;
 const myTokenBytecode = require('../artifacts/contracts/MyToken.sol/MyToken.json').bytecode;
 
-const Tx = require('ethereumjs-tx').Transaction;
-
-let myToken = undefined;
+const myToken = undefined;
 
 let connect_contract = function(ca=undefined){
     if(myToken == undefined)
@@ -132,7 +128,7 @@ module.exports.getBalance = async function(eoa)
 module.exports.sendTransaction = async function(from,to,value)
 {
     try{
-        await web3.eth.sendTransaction({from,to,value,gas:1000000}).then(console.log);
+        await web3.eth.sendTransaction({from,to,value}).then(console.log);
     }
     catch(error){
         console.log(error);
@@ -155,12 +151,12 @@ module.exports.makeKeystore = function(privateKey, password)
     }
 }
 
-module.exports.deploy = async function(account, password)
+module.exports.deploy_token = async function(account, password, name, symbol, decimal)
 {
     try{
         connect_contract();
 
-        let deployParameter = {data: myTokenBytecode, arguments: ['PGI','PGI', 18]};
+        let deployParameter = {data: myTokenBytecode, arguments: [name,symbol, decimal]};
 
         let func = myToken.deploy(deployParameter);
 
@@ -171,16 +167,16 @@ module.exports.deploy = async function(account, password)
     }
 }
 
-module.exports.deploy2_token = async function(ownerAddress, privateKey)
+module.exports.deploy_key_token = async function(ownerAddress, privateKey,name,symbol,decimal)
 {
     try{
         connect_contract();
 
-        let deployParameter = {data: myTokenBytecode, arguments: ['PGI','PGI', 18]};
+        let deployParameter = {data: myTokenBytecode, arguments: [name,symbol,decimal]};
 
         let func = myToken.deploy(deployParameter);
 
-        await sendSignedTransaction(ownerAddress,privateKey,func);
+        await sendSignedTransaction_key(ownerAddress,privateKey,func);
     }
     catch(error){
         console.log(error);
@@ -257,16 +253,32 @@ module.exports.transferFrom = async function(ca, eoa, privateKey, from, to, amou
     }
 }
 
-module.exports.test = async function(ca, eoa){
+module.exports.getBalance = async function(eoa)
+{
     try{
-        connect_contract(ca);
+        await web3.eth.getBalance(eoa).then(console.log);
+    }
+    catch(error){
+        console.log(error);
+    }
+}
+
+module.exports.test = function(from,to,from2,to2,value){
+    try{
+//        await web3.eth.sendTransaction({from,to,value}).then(console.log);
         
         let batch = new web3.BatchRequest();
-        batch.add(web3.eth.getBalance.then(console.log).request(eoa));
-
-        batch.add(myToken.methods.balanceOf(eoa).call.request().then(console.log));
-
-        await batch.execute();
+        batch.add(web3.eth.getBalance.request(from,(res)=>{
+            assert(res);
+        }));
+/*
+        batch.add(web3.eth.sendTransaction.encodeABI().request({from:from2,to:to2,value},(error,res)=>{
+            if(error) throw error;
+            console.log(res);
+        }));*/
+console.log(batch);
+        batch.execute();
+        console.log(batch);
     }
     catch(error){
         console.log(error);
