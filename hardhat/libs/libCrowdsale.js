@@ -1,3 +1,7 @@
+const password = "pki117611!";
+
+
+
 
 const Web3 = require('web3');
 
@@ -5,13 +9,11 @@ const Wallet = require("ethereumjs-wallet");
 const fs = require("fs");
 const Tx = require('ethereumjs-tx').Transaction;
 
-//const keystorePath = "/home/gipark/testnet/keystore/UTC--2022-03-07T10-03-13.124634400Z--d0ca1613a59374ac4c99692c9b7235f2980f9ae4";
+const keystorePath = "/Users/gipark/BlockChain/Blockchain/hardhat/UTC--2022-03-14T00-45-18.595Z--ff78361785832d952916d0a8d5ff6895139aa958";//main
 
-//const keystorePath2 = "/home/gipark/testnet/keystore/UTC--2022-03-07T10-04-01.189444200Z--37fdd8ccc6459ff6e0048f7fe0e7f5c79848efa0";
+const keystorePath2 = "/Users/gipark/BlockChain/Blockchain/hardhat/UTC--2022-03-14T00-48-27.343Z--05d035d402d20cb04a7bbc07aa4481d019499ec6";//sub
 
-const keystorePath = "/home/gipark/Blockchain2/UTC--2022-03-08T00-47-31.834Z--05d035d402d20cb04a7bbc07aa4481d019499ec6";
-
-//const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+//const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545'));
 const web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'));
 const crowdsaleAbi = require('../artifacts/contracts/CrowdSale.sol/CrowdSale.json').abi;
 const crowdsaleBytecode = require('../artifacts/contracts/CrowdSale.sol/CrowdSale.json').bytecode;
@@ -32,7 +34,7 @@ let connect_contract = function(ca=undefined){
     }
 }
 
-let sendSignedTransaction = async function(account, password, func, to=undefined)
+let sendSignedTransaction = async function(account, func, to=undefined)
 {
     let nonce = await web3.eth.getTransactionCount(account);
 
@@ -113,7 +115,7 @@ let sendSignedTransaction_key = async function(from, privateKey, func, to=undefi
     await web3.eth.sendSignedTransaction(rawData);
 }
 
-module.exports.deployCrowdsale = async function(account, password, token, price, goal)
+module.exports.deployCrowdsale = async function(account, token, price, goal)
 {
     try{
         connect_contract();
@@ -122,31 +124,31 @@ module.exports.deployCrowdsale = async function(account, password, token, price,
 
         let func = crowdsale.deploy(deployParameter);
 
-        await sendSignedTransaction(ownerAddress,privateKey,func);
+        await sendSignedTransaction(account,func);
     }
     catch(error){
         console.log(error);
     }
 }
 
-module.exports.checkGoal = async function(ca, ownerAddress, privateKey)
+module.exports.checkGoal = async function(ca, account)
 {
     try{
         connect_contract(ca);
         let func = crowdsale.methods.checkGoal();
-        await sendSignedTransaction(ownerAddress, privateKey, func,ca);
+        await sendSignedTransaction(account, func,ca);
     }
     catch(error){
         console.log(error);
     }
 }
 
-module.exports.getFailEther = async function(ca, ownerAddress, privateKey)
+module.exports.getFailEther = async function(ca, account)
 {
     try{
         connect_contract(ca);
         let func = crowdsale.methods.getFailEther();
-        await sendSignedTransaction(ownerAddress, privateKey, func,ca);
+        await sendSignedTransaction(account, func,ca);
     }
     catch(error){
         console.log(error);
