@@ -1,18 +1,21 @@
 //exe: node exams.js [getBalance] [addr]
 //exe: node exams.js [sendTx] [from addr] [to addr] [amount] 
 
+const libWeb3 = require("../libs/libWeb3");
 const libMyToken = require("../libs/libMyToken.js");
 const libCrowdsale = require("../libs/libCrowdsale.js");
+const { Log } = require("../libs/libWinston");
 
 const test = libMyToken.test;
 const getBalance = libMyToken.getBalance;
 const sendTransaction = libMyToken.sendTransaction;
-const makeKeystore = libMyToken.makeKeystore;
+const makeKeystore = libWeb3.makeKeystore;
 const deploy_token = libMyToken.deploy_token;
 const deploy_key_token = libMyToken.deploy_key_token;
 const totalSupply = libMyToken.totalSupply;
 const balanceOf = libMyToken.balanceOf;
 const transfer = libMyToken.transfer;
+const transfer_n = libMyToken.transfer_n;
 const allowance = libMyToken.allowance;
 const approve = libMyToken.approve;
 const transferFrom = libMyToken.transferFrom;
@@ -106,7 +109,8 @@ let proc_totalSupply = async function(){
         {
             throw new Error("Usage : node exams/exams.js totalSupply [ca]");
         }
-        await totalSupply(arguments[0]);
+        let total = await totalSupply(arguments[0]);
+        console.log("[totalSupply] %d",total);
     }
     catch(error){
         console.log(error);
@@ -119,7 +123,8 @@ let proc_balanceOf = async function(){
         {
             throw new Error("Usage : node exams/exams.js balanceOf [ca] [eoa]");
         }
-        await balanceOf(arguments[0],arguments[1]);
+        let balance = await balanceOf(arguments[0],arguments[1]);
+        console.log("[balanceOf] %s : %d",arguments[1],balance);
     }
     catch (error){
         console.log(error);
@@ -128,11 +133,28 @@ let proc_balanceOf = async function(){
 
 let proc_transfer = async function(){
     try{
+        if(process.argv.length != 6)
+        {
+            throw new Error("Usage : node exams/exams.js transfer [ca] [to] [amount]");
+        }
+        await transfer(arguments[0],arguments[1],arguments[2]);
+    }
+    catch (error){
+        console.log(error);
+    }
+}
+
+let proc_transfer_n = async function(){
+    try{
         if(process.argv.length != 7)
         {
-            throw new Error("Usage : node exams/exams.js transfer [ca] [from] [to] [amount]");
+            throw new Error("Usage : node exams/exams.js transfer_10 [ca] [to] [amount] [count]");
         }
-        await transfer(arguments[0],arguments[1],arguments[2],arguments[3]);
+        if(arguments[3] < 2)
+        {
+            throw new Error("count must be over 1");
+        }
+        await transfer_n(arguments[0],arguments[1],arguments[2],arguments[3]);
     }
     catch (error){
         console.log(error);
@@ -259,7 +281,8 @@ let RunProc = async function() {
             case "deploy_key_token":{await proc_deploy_key_token(process.argv[3],process.argv[4],process.argv[5],process.argv[6],process.argv[7]);break;}  //for ganache test (input key)
             case "totalSupply":{await proc_totalSupply(process.argv[3]);break;}
             case "balanceOf":{await proc_balanceOf(process.argv[3], process.argv[4]);break;}
-            case "transfer":{await proc_transfer(process.argv[3], process.argv[4],process.argv[5],process.argv[6]);break;}
+            case "transfer":{await proc_transfer(process.argv[3], process.argv[4],process.argv[5]);break;}
+            case "transfer_n":{await proc_transfer_n(process.argv[3], process.argv[4],process.argv[5],process.argv[6]);break;}
             case "allowance":{await proc_allowance(process.argv[3], process.argv[4],process.argv[5]);break;}
             case "approve":{await proc_approve(process.argv[3], process.argv[4],process.argv[5],process.argv[6],process.argv[7]);break;}
             case "transferFrom":{await proc_transferFrom(process.argv[3], process.argv[4],process.argv[5],process.argv[6],process.argv[7]);break;}

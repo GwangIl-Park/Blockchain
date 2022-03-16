@@ -4,6 +4,9 @@ const keystorePath = process.env.KEYSTORE;
 const keystorePath2 = process.env.KEYSTORE2;
 const provider = process.env.PROVIDER;
 
+const libWinston = require("./libWinston.js");
+const Log = libWinston.Log;
+
 const Web3 = require("web3");
 const fs = require("fs");
 
@@ -17,9 +20,7 @@ module.exports.makeKeystore = function(privateKey)
 
         let account = web3.eth.accounts.privateKeyToAccount(privateKey);
 
-        let address = account.address;
-
-        let fileName = `UTC--${new Date().toISOString().replace(/[:]/g, '-')}--${address}`
+        let fileName = `keystore/UTC--${new Date().toISOString().replace(/[:]/g, '-')}--${account.address}`
 
         fs.writeFileSync(fileName, jsonContent);
     }
@@ -55,18 +56,18 @@ module.exports.connect_contract = function(contract_abi, ca=undefined)
     }
 }
 
-module.exports.makeTransaction = async function(func, account)
+module.exports.makeTransaction = async function(func, account,to=undefined)
 {
     try{
         let nonce = await web3.eth.getTransactionCount(account.address); //return number
-
-        nonce = web3.utils.toHex(nonce);
 
         let gasPrice = await web3.eth.getGasPrice(); //return string
 
         gasPrice = `0x${parseInt(gasPrice).toString(16)}`;
         
         let gasLimit = await func.estimateGas({from:account.address});
+
+        gasLimit+=100;
         
         let data = await func.encodeABI();
 
@@ -75,6 +76,10 @@ module.exports.makeTransaction = async function(func, account)
             gasPrice,
             gasLimit,
             data
+        }
+        if(to!=undefined)
+        {
+            rawTx.to = to;
         }
         
         return rawTx;
@@ -94,53 +99,50 @@ module.exports.signTransaction = async function(rawTx, account)
     }
 }
 
-module.exports.sendTransaction = async function(signedTx)
+module.exports.sendTransaction = async function(signedTx, bsync)
 {
     try{
-        web3.eth.sendSignedTransaction(signedTx);
+        if(bsync)
+        {
+            await web3.eth.sendSignedTransaction(signedTx)
+            .on("transactionHash",async function(hash){
+                Log(hash);
+            })
+            .on("receipt",async function(receipt){
+                Log(receipt);
+            });
+        }
+        else
+        {
+            web3.eth.sendSignedTransaction(signedTx)
+            .on("transactionHash",async function(hash){
+                Log(hash);
+            })
+            .on("receipt",async function(receipt){
+                Log(receipt);
+            });
+        }
     }
     catch(error){
         console.log(error);
     }
 }
 
-
-let sendSignedTransaction_key = async function(from, privateKey, func, to=undefined)
+module.exports.createBatch = function()
 {
-    let nonce = await web3.eth.getTransactionCount(from);
+    return new web3.BatchRequest();
+}
 
-    nonce = web3.utils.toHex(nonce);
-
-    let gasPrice = await web3.eth.getGasPrice();
-
-    gasPrice = `0x${parseInt(gasPrice).toString(16)}`;
-
-    let gasLimit = await func.estimateGas();
-
-    gasLimit *= 2;
-    let data = await func.encodeABI();
-
-    let rawTx = {
-        nonce,
-        gasLimit,
-        gasPrice,
-        data
-    };
-
-    if(to!=undefined)
-    {
-        rawTx.to=to;
-    }
-
-    let tx = new Tx(rawTx);
-
-    let key = Buffer.from(privateKey, 'hex');
-
-    tx.sign(key);
-
-    let serializedTx = tx.serialize();
-
-    let rawData = '0x'+serializedTx.toString('hex');
-
-    await web3.eth.sendSignedTransaction(rawData);
+module.exports.get_sendTransaction_request = async function(signedTx)
+{
+    return web3.eth.sendSignedTransaction.request(signedTx,function(error,hash){
+        if(error)
+        {
+            Log(error);
+        }
+        else
+        {
+            Log(hash);
+        }
+    })
 }
